@@ -1,0 +1,550 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.4.1/css/reveal.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/tomorrow.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.4.1/css/theme/white.css">
+
+        <style type="text/css">
+         pre { display: flex !important; flex-direction: column; }
+         pre code { padding-left: 1.5em !important; }
+         img { border: none !important; box-shadow: none !important; }
+         .MathJax_Display { margin: 1em 0 !important; }
+        </style>
+    </head>
+
+    <body>
+
+        <div class="reveal">
+            <div class="slides">
+	        <section>
+                    <h1>Algebraic Patterns</h1>
+                    <h3>Philip Nilsson</h3>
+                    <div style="display: flex; align-items: center; justify-content: center;">
+                        <img width="10%" src="http://i456.photobucket.com/albums/qq285/dwbrister/Twitter/v65oai7fxn47qv9nectx_reasonably_small.png"/>
+                        <span>@ali_pang</span>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Why I like Haskell</h2>
+
+                    <ul>
+                        <li>Immutability</li>
+                        <li>Strong static type-safety</li>
+                        <li>Well-behaved abstractions</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Well-behaved abstractions?</h2>
+                    <ul>
+                        <li>Simple</li>
+                        <li>Predictable</li>
+                        <li>Easy to reason about</li>
+                    </ul>
+
+                    <p class="fragment"> This is very vague :(</p>
+                </section>
+
+                <section>
+                    <h2>Simplicity</h2>
+                    <p>Simple abstractions satisfies algebraic coherence conditions.
+                    </p>
+                </section>
+
+                <section>
+                    <h2>Equality</h2>
+                    <p>Implementing the <code>==</code> operator.</p>
+                    <p>\[ = \thinspace\thinspace :: (X, X) \rightarrow Bool \]</p>
+                </section>
+
+                <section>
+                    <h2>IEEE 754</h2>
+                    <pre class="reveal">
+                        <code class="javascript">
+...
+if (x == NaN) {
+  print("oops");
+}
+print(x);
+                        </code>
+                    </pre>
+
+                    <pre class="fragment"><code>
+>> NaN == NaN
+false
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Internet Explorer</h2>
+                    <pre class="fragment">
+                        <code>
+>> window == document
+true
+                        </code>
+                        <code class="fragment">
+>> document == window
+false
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Javascript</h2>
+                    <pre class="fragment">
+                        <code>
+>> "" == 0
+true
+                        </code>
+                        <code class="fragment">
+>> 0 == "0"
+true
+                        </code>
+                        <code class="fragment">
+>> "" == "0"
+false
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Equivalence Relation</h2>
+
+                    <ul>
+                        <li>$x = x$</li>
+                        <li>$x = y \implies y = x$</li>
+                        <li>$x = y \land y = z \implies x = z$</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Equivalence Relation: Intuition</h2>
+                    <p>An equivalence relation splits a set of elements into <i>partitions</i>.</p>
+                    <img src="./eq.png"/>
+                </section>
+
+                <section>
+                    <h2>Equivalence Relation: Example</h2>
+
+                    <pre>
+                        <code class="haskell">
+data ClockTime = ClockTime { hour :: Int }
+
+ClockTime x == ClockTime y =
+  x % 12 == y % 12
+                        </code>
+                    </pre>
+
+                    <div class="fragment">
+                        <h3> Partitions</h3>
+                        <pre>
+                            <code>
+{ 0, 12, 24, ... }
+{ 1, 13, 25, ... }
+{ 2, 14, 26, ... }
+                            </code>
+                        </pre>
+                    </div>
+
+                </section>
+
+                <section>
+                  <h2>Strategy</h2>
+
+                  <ul>
+                    <li>Find example of surprising or complex behaviour.</li>
+                    <li>Write down algebraic law to prevent it.</li>
+                    <li>Develop intuition for meaning of algebraic law.</li>
+                    <li>Name the pattern.</li>
+                    <li>Code it.</li>
+                  </ul>
+                </section>
+
+                <section>
+                    <h2> Composition </h2>
+                    Implementing the $\otimes$ operator.
+                    <p> \[ \otimes :: (X, X) \rightarrow X \] </p>
+                </section>
+
+                <section>
+                    <h2>Composition</h2>
+
+                    <pre>
+                        <code class="haskell">
+(+)  :: (Int, Int) -> Int
+(*)  :: (Int, Int) -> Int
+(++) :: (String, String) -> String
+(∪)  :: (Set, Set) -> Set  -- set union
+(∩)  :: (Set, Set) -> Set  -- set intersection
+(.)  :: (a -> a) -> (a -> a) -> (a -> a)
+                        </code>
+                    </pre>
+                </section>
+
+                <section>
+                    <h2>Composing multiple elements</h2>
+
+                    <pre>
+                        <code class="haskell">
+type Compose a =
+  (a, a) -> a
+
+⊗ :: Compose a
+
+fold :: Compose a -> [a] -> a
+fold [x,y,z,...] = x ⊗ y ⊗ z ⊗ ...
+                        </code>
+                    </pre>
+
+                </section>
+
+                <section>
+                    <h2>Problem: Not all folds are well-defined</h2>
+                    <pre>
+                        <code class="haskell">
+(-) :: Compose Int
+
+fold [1,2,3,4] = 1 - 2 - 3 - 4
+               = 1 - (2 - (3 - 4)) -- ??
+               = ((1 - 2) - 3) - 4 -- ??
+               = (1 - (2 - 3)) - 4 -- ??
+               = 1 - ((2 - 3) - 4) -- ??
+                        </code>
+                    </pre>
+                </section>
+                <section>
+                    <h2> Solution: Associativity </h2>
+
+                    \[ x \otimes (y \otimes z) = (x \otimes y) \otimes z \]
+                </section>
+
+                <section>
+                    <h2>Associativity: Inuition</h2>
+                    <p> Subtraction is a type of <i>difference</i> not a type of composition.</p>
+                </section>
+
+                <section>
+                    <h2>Associativity: Inuition</h2>
+                    <img width="50%" src="https://philipnilsson.github.io/Badness10k/images/puzzle-pieces.png"/>
+                    <p>Both evaluate to</p>
+                    <img width="50%" src="https://philipnilsson.github.io/Badness10k/images/pieces-composed.png"/>
+                </section>
+
+                <section>
+                    <h2>Name it</h2>
+
+                    A type $X$ and associative operator $\otimes :: (X, X) \rightarrow X$  is a called a <i>Semigroup</i>.
+
+                </section>
+                <section><h2> Code it </h2></section>
+                <section>
+                    <h2>Problem: How to fold an empty list</h2>
+                    <pre><code class="haskell">
+fold [] = ??
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Solution: Provide a "default&nbsp;value"</h2>
+                    <pre><code class="haskell">
+fold [] = empty
+fold (x:xs) = x <> fold xs
+                    </code></pre>
+                </section>
+                <section>
+                    <h2> Problem </h2>
+
+                    \[ fold [1,2,3] = 1 \otimes 2 \otimes 3 \otimes e \]
+
+                    <p>Shouldn't it be $1 \otimes 2 \otimes 3$?</p>
+                </section>
+
+                <section>
+                    <h2>Solution: Algebra away the difference</h2>
+                    Require that
+                    \[ x \otimes e = x = e \otimes x \]
+                </section>
+
+                <section>
+                    <h2>Intuition</h2>
+                    Define composition by
+                    <div><img width="300" src="https://philipnilsson.github.io/Badness10k/images/pour.png"></div>
+                </section>
+
+                <section>
+                    <h2>Intuition</h2>
+                    <div><img width="300" src="https://philipnilsson.github.io/Badness10k/images/empty1.png"></div>
+                    <div><img width="300" src="https://philipnilsson.github.io/Badness10k/images/empty2.png"></div>
+                </section>
+
+                <section>
+                    <h2>Name it</h2>
+
+                    An element $e$ of a semigroup is called
+                    an <i>Identity element</i> if for all $x$ it satisfies.
+
+                    \[
+                    e \otimes x = x \\
+                    x \otimes e = x
+                    \]
+                </section>
+
+                <section>
+                    <h2> Name it </h2>
+                    A semigroup with identity is called a <i>Monoid</i>.
+                </section>
+
+                <section>
+                    <h2>Code it</h2>
+                </section>
+
+                <section>
+                    <h2>Theorem: There is only one identity element</h2>
+                    <p> <strong>Proof:</strong> Let $e$ and $f$ be two
+                        candidates for being identities. Have the "battle it out"</p>
+
+                    \[ e \otimes f = \thinspace ? \]
+
+                </section>
+
+                <section>
+                    <h2> Category Theory </h2>
+                    <p>
+                        Associativity and identity form the basis of a
+                        branch of mathematics called <i>Category Theory</i>
+                    </p>
+                </section>
+
+                <section>
+                    <h2> Problem: Not all elements compose </h2>
+                    <img src="./puzzle-category.png"/>
+                </section>
+
+                <section>
+                    <h2> Solution: Introduce "types". </h2>
+                    <img src="./puzzle-types.png"/>
+                </section>
+
+                <section>
+                    <h2> Objects & Morphisms </h2>
+                    <p> The types of a Category are called objects </p>
+                    <p> The elements are called morphisms. </p>
+                    <p>
+                        Morphisms compose just like elements of a Monoid, but
+                        the "types" must also match.
+                    </p>
+                </section>
+
+                <section>
+                    <p>The identity morphism is called $id$.</p>
+                    <p>Morphisms compose with $\circ$</p>
+                </section>
+
+                <section>
+                    <h2>Hask</h2>
+                    <p> Objects are Haskell types</p>
+                    <p> Morphisms are Haskell functions with function composition. </p>
+                    <p> A function with type $a \rightarrow b$ composes with
+                        a function of type $b \rightarrow c$ or $d \rightarrow a$
+                    </p>
+                </section>
+
+                <section>
+                    <h2>Monoid category</h2>
+                    <p> There is only a single type</p>
+                    <p> Morphisms are the Monoid elements composing with $\otimes$</p>
+                    <p> All elements compose</p>
+                </section>
+
+                <section>
+                    <h2> Matrices </h2>
+                    <p> Objects are numbers </p>
+                    <p> Morphisms are matrices composing with matrix multiplication.</p>
+                    <p> An $n \times m$ matrix can only compose
+                        with an $m \times k$ matrix or a $k \times n$.
+                    </p>
+                </section>
+
+                <section>
+                    <h2>Kleisli categories</h2>
+                    <p> Objects are types (in Hask)</p>
+                    <p>
+                        Morphisms are a special kind of function (on
+                        the form $a \rightarrow f\thinspace b$)
+                    </p>
+                </section>
+
+                <section>
+                    <h2>Partial functions / Maybe monad </h2>
+                    <img src="./partial.png"/>
+                </section>
+
+                <section>
+                    <h2>Stateful functions / State Monad </h2>
+                    <img src="./state.png"/>
+                </section>
+
+                <section>
+                    <h2>Code</h2>
+                </section>
+
+                <section>
+                    <h2>Homomorphisms</h2>
+                    <p>
+                        Semigroups, Monoids, Groups, Categories etc
+                        add <i>structure</i> to a type.
+                    </p>
+                    <p>
+                        Homomorphisms are structure preserving
+                        functions.
+                    </p>
+                </section>
+
+                <section>
+                    <h2>Preserving identity element</h2>
+                    <p><code>sum [] = 0</code></p>
+                    <p><code>len [] = 0</code></p>
+                    <p>$\exp(0) = 1$</p>
+                    <p>$\log(1) = 0$</p>
+                </section>
+
+                <section>
+                    <h2>Preserving composition</h2>
+                    <p><code>sum (xs ++ ys) = sum xs + sum ys</code></p>
+                    <p><code>len (xs ++ ys) = len xs * len ys</code></p>
+                </section>
+
+                <section>
+                    <h2>Preserving composition II </h2>
+                    <p>$\exp(x + y) = \exp(x) \times \exp(y)$</p>
+                    <p>$\log(x \times y) = \log(x) + \log(y)$</p>
+                </section>
+
+                <section>
+                    <h2>Monoid homomorphisms</h2>
+                    <p>A Monoid homomorphism is a structure preserving map $h$
+                        from one monoid to another such that.
+                    </p>
+
+                    \[
+                    h(e) = e' \\
+                    h(x \otimes y) = h(x) \bullet h(y)
+                    \]
+                </section>
+
+                <section>
+                    <code>map (f . g) = map f . map g</code>
+                </section>
+
+                <section>
+                    <code>filter (p <> q) = filter p . filter q</code>
+                </section>
+
+                <section>
+                    <h2>Intuition</h2>
+                    <img src="./rect.png"/>
+                    \[area :: (0,+) \rightarrow (0,+)\]
+                    \[ area(a + b) = area(a) + area(b) \]
+                </section>
+
+                <section>
+                    <h2>Mergesort</h2>
+                    <code>sort (xs ++ ys) = sort xs ⊗ sortBy ys</code>
+                </section>
+
+                <section>
+                    <h2>Stable sorts</h2>
+                    <code> sortBy (c ⊗ d) = sortBy c ∘ sortBy d </code>
+                </section>
+
+                <section>
+                    <h2>Theorem: </h2>
+                    <p>
+                        All folds from the list monoid are on the form
+                        <p><code>fold . map f</code></p>
+                    </p>
+                </section>
+
+                <section>
+                    <h2>Inverse elements</h2>
+                    \[ x \otimes x^{-1} = e \]
+                </section>
+
+                <section>
+                    <h2>Linear functions</h2>
+                    <img src="http://images.flatworldknowledge.com/reddenint/reddenint-fig02_097.png">
+                    \[ f(-x) = -f(x) \]
+                </section>
+
+                <section>
+                    <h2>Exponential functions</h2>
+                    <img src="http://mathinsight.org/media/image/image/exponential_function_two_to_x.png"/>
+                    \[ log(\frac{1}{2}) = -log(2) \]
+                </section>
+
+                <section>
+                    <h2>Linear Functions</h2>
+                    <img src="http://blog.stata.com/wp-content/uploads/2011/02/fig5_1.png"/>
+                </section>
+
+                <section>
+                    <h2>Vector addition</h2>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Vector_addition.png">
+                    \[ f(u + v) = f(u) + f(v) \]
+                </section>
+
+                <section>
+                    <h2>Compiling regular expressions</h2>
+                    <img src="http://condor.depaul.edu/glancast/444class/docs/images/nfa_concat.gif">
+                    <p>$compile(r \cdot q) = compile(r) \bullet compile(q)$</p>
+                </section>
+
+                <section>
+                    <h2>Compiling regular expressions</h2>
+                    <img src="http://condor.depaul.edu/glancast/444class/docs/images/nfa_union.gif">
+                    <p>$compile(r | q) = compile(r) \cup compile(q)$</p>
+                </section>
+
+                <section>
+                    <h2>Functors</h2>
+                    <p>Homomorphisms on categories</p>
+                    <p>\[ map(f \circ g) = map(f) \circ map(g) \]</p>
+                </section>
+
+                <section>
+                    <h2>Conclusion & Questions</h2>
+                </section>
+            </div>
+        </div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.4.1/js/reveal.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.4.1/lib/js/head.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.4.1/plugin/highlight/highlight.min.js"></script>
+
+
+        <script>
+
+         Reveal.initialize({
+             history: true,
+             math: {
+		 mathjax: 'https://cdn.mathjax.org/mathjax/latest/MathJax.js',
+		 config: 'TeX-AMS_HTML-full'  // See http://docs.mathjax.org/en/latest/config-files.html
+	     },
+             dependencies: [
+                 {
+                     src: 'https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.4.1/plugin/highlight/highlight.min.js',
+                     async: true,
+                     callback: hljs.initHighlightingOnLoad
+                 },
+                 {
+                     src: 'https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.4.1/plugin/math/math.min.js',
+                     async: true
+                 }
+             ]
+         });
+
+        </script>
+    </body>
+
+</html>
