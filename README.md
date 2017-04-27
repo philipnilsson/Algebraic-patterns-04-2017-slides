@@ -1,0 +1,1 @@
+# Algebraic-patterns-04-2017-slides
